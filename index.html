@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CV - Daniel Neau-Inizan | Portfolio Final</title>
-    <meta
-        name="description"
-        content="CV de Daniel Neau-Inizan - Profil professionnel et compétences."
-    />
+    <title>CV - Daniel Neau-Inizan | Portfolio</title>
+    <meta name="description" content="CV de Daniel Neau-Inizan - Profil professionnel et compétences." />
+    
+    <!-- Icônes FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
@@ -17,9 +16,9 @@
             --bg-base: #F2F2F7; 
             --bg-dark: #1C1C1E; 
             --text-color: #000000;
-            --control-bg: rgba(255, 255, 255, 0.8);
+            --control-bg: rgba(255, 255, 255, 0.85);
             --radius-large: 14px;
-            --document-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            --document-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             --menu-bg: rgba(255, 255, 255, 0.95);
         }
 
@@ -28,12 +27,12 @@
             :root {
                 --bg-base: var(--bg-dark);
                 --text-color: #FFFFFF;
-                --control-bg: rgba(28, 28, 30, 0.7);
+                --control-bg: rgba(28, 28, 30, 0.75);
                 --menu-bg: rgba(44, 44, 46, 0.95);
             }
         }
         
-        /* --- STRUCTURE DE BASE --- */
+        /* --- STRUCTURE GLOBALE --- */
         html, body {
             height: 100%; width: 100%; margin: 0; padding: 0;
             background: var(--bg-base); overflow: hidden;
@@ -41,128 +40,140 @@
             color: var(--text-color);
         }
 
-        /* --- BARRE DE CONTRÔLE UNIQUE FLOTTANTE --- */
+        /* --- BARRE DE NAVIGATION FLOTTANTE --- */
         #main-control-bar {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 800px; height: 55px;
+            width: 95%; max-width: 850px; height: 60px;
             background: var(--control-bg); backdrop-filter: blur(25px) saturate(1.5); 
             z-index: 1000; display: flex; justify-content: space-between; align-items: center;
             padding: 0 15px; border-radius: var(--radius-large); box-shadow: var(--document-shadow);
+            border: 1px solid rgba(150, 150, 150, 0.1);
         }
 
-        /* Styles des boutons */
-        .controls-group { display: flex; gap: 10px; align-items: center; position: relative; }
-        .controls-group .title-text { color: var(--text-color); font-weight: 600; font-size: 0.9rem; margin-left: 10px;}
+        /* --- BOUTONS & GROUPES --- */
+        .controls-group { display: flex; gap: 12px; align-items: center; position: relative; }
         
-        .control-button { background-color: transparent; color: var(--text-color); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: background-color 0.15s; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 500; }
-        .control-button:hover { background-color: rgba(150, 150, 150, 0.1); transform: none; }
+        .title-text { 
+            color: var(--text-color); font-weight: 600; font-size: 0.95rem; margin-left: 5px; 
+            white-space: nowrap;
+        }
+        
+        .control-button { 
+            background-color: transparent; color: var(--text-color); border: none; 
+            padding: 8px 14px; border-radius: 10px; cursor: pointer; 
+            transition: background-color 0.2s; font-size: 0.95rem; 
+            display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 500; 
+        }
+        .control-button:hover { background-color: rgba(150, 150, 150, 0.15); }
+        
         .control-button.primary { background-color: var(--apple-accent); color: white; }
         .control-button.primary:hover { background-color: #E6362C; }
 
-        /* --- STYLES POUR LE MENU CONTACT --- */
+        /* --- MENU DÉROULANT CONTACT --- */
         .dropdown { position: relative; display: inline-block; }
         
         .dropdown-content {
             display: none;
             position: absolute;
-            top: 45px; /* Juste en dessous de la barre */
+            top: 50px; 
             left: 0;
             background-color: var(--menu-bg);
-            min-width: 260px; /* Élargi pour l'adresse */
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            /* Largeur auto ajustée pour votre email, mais avec un min pour l'esthétique */
+            min-width: 280px; 
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
             border-radius: 12px;
-            padding: 5px;
+            padding: 6px;
             z-index: 1001;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(30px);
             border: 1px solid rgba(150, 150, 150, 0.1);
+            animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Animation d'ouverture douce */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .dropdown-content a {
             color: var(--text-color);
-            padding: 10px 12px;
+            padding: 12px 12px;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             border-radius: 8px;
-            font-size: 0.85rem;
-            transition: background 0.2s;
+            font-size: 0.9rem;
+            transition: background 0.15s;
         }
 
         .dropdown-content a:hover {
-            background-color: rgba(150, 150, 150, 0.15);
+            background-color: rgba(150, 150, 150, 0.12);
         }
+
+        .dropdown-content i { width: 20px; text-align: center; color: var(--apple-accent); }
         
-        /* Petit ajustement pour que le texte de l'adresse ne déborde pas */
-        .dropdown-content span.info-text {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .info-text { font-weight: 400; }
 
-        /* Classe pour afficher le menu via JS */
-        .show { display: block; animation: fadeIn 0.2s ease-out; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .show { display: block; }
 
         @media print { #main-control-bar { display: none; } }
-        @media (max-width: 600px) { .controls-group .btn-text { display: none; } .controls-group .title-text { display: none; } }
+        /* Sur mobile, on cache le titre pour gagner de la place */
+        @media (max-width: 650px) { .title-text { display: none; } }
 
 
         /* --- CONTENEUR PDF --- */
         .pdf-wrapper {
-            padding-top: 90px; height: 100%; width: 100%;
+            padding-top: 100px; height: 100%; width: 100%;
             overflow-y: auto; 
             display: flex; justify-content: center; align-items: flex-start; 
             padding-bottom: 50px;
         }
 
         .pdf-document-frame {
-            max-width: 850px; 
-            width: 90%; 
-            min-height: calc(100vh - 120px);
-            margin-top: 30px; box-shadow: var(--document-shadow); 
-            border-radius: 6px; overflow: hidden; background: #FFFFFF;
+            max-width: 900px; width: 92%; 
+            min-height: calc(100vh - 140px);
+            margin-bottom: 40px; box-shadow: var(--document-shadow); 
+            border-radius: 8px; overflow: hidden; background: #FFFFFF;
         }
         
-        .pdf-container { width: 100%; height: 100%; min-height: 800px; display: block; }
+        .pdf-container { width: 100%; height: 100%; min-height: 850px; display: block; }
         
-        .fallback-message { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-color); text-align: center; background: var(--bg-base); }
-        .fallback-message .control-button { position: static; margin-top: 20px; color: white; background-color: var(--apple-accent); }
+        .fallback-message { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-color); text-align: center; padding: 20px; }
+        .fallback-message .control-button { margin-top: 20px; background-color: var(--apple-accent); color: white; }
     </style>
 </head>
 <body>
 
     <div class="custom-controls" id="main-control-bar">
         
-        <!-- GROUPE GAUCHE : MENU CONTACT + TITRE -->
+        <!-- GAUCHE : MENU CONTACT + NOM -->
         <div class="controls-group">
             <div class="dropdown">
-                <button onclick="toggleMenu()" class="control-button">
-                    <i class="fas fa-envelope"></i>
+                <button onclick="toggleMenu()" class="control-button" title="Me contacter">
+                    <i class="fas fa-address-card"></i>
                     <span>Contact</span>
-                    <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 2px;"></i>
+                    <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 2px; opacity: 0.6;"></i>
                 </button>
+                
+                <!-- VOS INFORMATIONS -->
                 <div id="contactDropdown" class="dropdown-content">
-                    <!-- EMAIL -->
+                    <!-- Email -->
                     <a href="mailto:neauinizan.daniel@gmail.com">
-                        <i class="fas fa-at"></i> 
+                        <i class="fas fa-envelope"></i> 
                         <span class="info-text">neauinizan.daniel@gmail.com</span>
                     </a>
                     
-                    <!-- TELEPHONE -->
+                    <!-- Téléphone -->
                     <a href="tel:+33761077231">
-                        <i class="fas fa-phone"></i> 
+                        <i class="fas fa-phone-alt"></i> 
                         <span class="info-text">07 61 07 72 31</span>
                     </a>
                     
-                    <!-- ADRESSE (Lien vers Google Maps) -->
-                    <a href="https://www.google.com/maps/search/?api=1&query=34b+rue+des+sources+saint+pathus" target="_blank">
+                    <!-- Adresse (Lien Maps) -->
+                    <a href="https://www.google.com/maps/search/?api=1&query=34b+rue+des+sources+Saint-Pathus" target="_blank">
                         <i class="fas fa-map-marker-alt"></i> 
-                        <span class="info-text">34b rue des sources, St-Pathus</span>
+                        <span class="info-text">34b rue des Sources, St-Pathus</span>
                     </a>
                 </div>
             </div>
@@ -170,18 +181,19 @@
             <span class="title-text">CV Daniel Neau-Inizan</span>
         </div>
 
-        <!-- GROUPE DROITE : ACTIONS -->
+        <!-- DROITE : BOUTONS ACTIONS -->
         <div class="controls-group">
-            <button class="control-button" onclick="toggleFullScreen()" title="Passer en plein écran">
+            <button class="control-button" onclick="toggleFullScreen()" title="Plein écran">
                 <i class="fas fa-expand"></i>
             </button>
-            <a href="daniel-neau-inizan-cv.pdf" class="control-button primary" download title="Télécharger le fichier PDF">
+            <a href="daniel-neau-inizan-cv.pdf" class="control-button primary" download title="Télécharger le PDF">
                 <i class="fas fa-download"></i>
                 <span class="btn-text">PDF</span>
             </a>
         </div>
     </div>
 
+    <!-- AFFICHAGE DU PDF -->
     <div class="pdf-wrapper">
         <div class="pdf-document-frame">
             <object
@@ -191,14 +203,10 @@
                 aria-label="CV de Daniel Neau-Inizan"
             >
                 <div class="fallback-message">
-                    <h2>Impossible d'afficher le PDF directement.</h2>
-                    <p>Votre navigateur ne supporte pas l'affichage de PDF intégré.</p>
-                    <a
-                        href="daniel-neau-inizan-cv.pdf"
-                        class="control-button"
-                        download
-                    >
-                        Cliquez ici pour télécharger le CV
+                    <h3>Affichage direct non supporté</h3>
+                    <p>Votre navigateur ne permet pas de voir le PDF directement ici.</p>
+                    <a href="daniel-neau-inizan-cv.pdf" class="control-button" download>
+                        Télécharger le CV
                     </a>
                 </div>
             </object>
@@ -206,12 +214,12 @@
     </div>
 
     <script>
-        /* Fonction pour afficher/masquer le menu contact */
+        // Gestion du Menu Contact
         function toggleMenu() {
             document.getElementById("contactDropdown").classList.toggle("show");
         }
 
-        /* Fermer le menu si on clique ailleurs sur la page */
+        // Ferme le menu si on clique n'importe où ailleurs
         window.onclick = function(event) {
             if (!event.target.matches('.control-button') && !event.target.closest('.control-button')) {
                 var dropdowns = document.getElementsByClassName("dropdown-content");
@@ -224,10 +232,11 @@
             }
         }
 
+        // Gestion du Plein Écran
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.error("Impossible d'activer le mode plein écran.", err);
+                    console.log("Erreur plein écran :", err);
                 });
             } else {
                 if (document.exitFullscreen) {
@@ -236,6 +245,7 @@
             }
         }
         
+        // Nettoyage (au cas où plusieurs barres s'affichent lors de tests)
         document.addEventListener('DOMContentLoaded', () => {
             const controlBars = document.querySelectorAll('.custom-controls'); 
             if (controlBars.length > 1) {
