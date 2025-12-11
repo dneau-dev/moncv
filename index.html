@@ -31,14 +31,15 @@
     <style>
         /* --- VARIABLES DE THÈME --- */
         :root {
-            --apple-accent: #FF3B30; 
-            --bg-base: #F2F2F7; 
+            --apple-blue: #0A84FF;
+            --apple-accent: var(--apple-blue); 
+            --bg-base: #F5F5F7; 
             --bg-dark: #1C1C1E; 
             --text-color: #000000;
-            --control-bg: rgba(255, 255, 255, 0.85);
-            --radius-large: 14px;
-            --document-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            --menu-bg: rgba(255, 255, 255, 0.95);
+            --control-bg: rgba(255, 255, 255, 0.9);
+            --radius-large: 18px;
+            --document-shadow: 0 22px 60px rgba(0, 0, 0, 0.25);
+            --menu-bg: rgba(255, 255, 255, 0.96);
         }
 
         /* Mode Sombre Adaptatif */
@@ -46,29 +47,27 @@
             :root {
                 --bg-base: var(--bg-dark);
                 --text-color: #FFFFFF;
-                --control-bg: rgba(28, 28, 30, 0.75);
-                --menu-bg: rgba(44, 44, 46, 0.95);
+                --control-bg: rgba(28, 28, 30, 0.82);
+                --menu-bg: rgba(44, 44, 46, 0.96);
             }
         }
         
-        /* --- STRUCTURE GLOBALE --- */
+        /* --- FOND GLOBAL ANIMÉ TYPE APPLE --- */
         html, body {
             height: 100%; width: 100%; margin: 0; padding: 0;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text-color);
-
-            /* FOND ANIMÉ */
-            background: linear-gradient(-45deg, #F2F2F7, #e0e0eb, #F2F2F7, #ffffff);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background: radial-gradient(circle at top, #FFFFFF 0, #F5F5F7 40%, #E5E5EA 100%);
+            background-size: 140% 140%;
+            animation: gradientBG 24s ease-in-out infinite;
         }
 
         /* Fond animé sombre */
         @media (prefers-color-scheme: dark) {
             html, body {
-                background: linear-gradient(-45deg, #1C1C1E, #2c2c2e, #000000);
-                background-size: 400% 400%;
+                background: radial-gradient(circle at top, #000000 0, #1C1C1E 40%, #2C2C2E 100%);
+                background-size: 160% 160%;
             }
         }
 
@@ -78,34 +77,89 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* --- ANIMATION APPLE – PULSATION LUMINEUSE + GLITCH --- */
+        @keyframes applePulseBig {
+            0%   { transform: scale(0.985); box-shadow: 0 0 18px rgba(10,132,255,0.18); }
+            25%  { transform: scale(1.01);  box-shadow: 0 0 42px rgba(10,132,255,0.45); }
+            50%  { transform: scale(1);     box-shadow: 0 0 28px rgba(10,132,255,0.32); }
+            75%  { transform: scale(1.008); box-shadow: 0 0 52px rgba(10,132,255,0.52); }
+            100% { transform: scale(0.985); box-shadow: 0 0 18px rgba(10,132,255,0.18); }
+        }
+
         /* --- BARRE DE NAVIGATION FLOTTANTE --- */
         #main-control-bar {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             width: 95%; max-width: 850px; height: 60px;
-            background: var(--control-bg); backdrop-filter: blur(25px) saturate(1.5); 
+            background: var(--control-bg);
+            backdrop-filter: blur(30px) saturate(1.5); 
+            -webkit-backdrop-filter: blur(30px) saturate(1.5);
             z-index: 1000; display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; border-radius: var(--radius-large); box-shadow: var(--document-shadow);
-            border: 1px solid rgba(150, 150, 150, 0.1);
+            padding: 0 18px; border-radius: var(--radius-large);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         /* --- BOUTONS & GROUPES --- */
-        .controls-group { display: flex; gap: 12px; align-items: center; position: relative; }
+        .controls-group { 
+            display: flex; 
+            gap: 12px; 
+            align-items: center; 
+            position: relative; 
+        }
         
         .title-text { 
-            color: var(--text-color); font-weight: 600; font-size: 0.95rem; margin-left: 5px; 
+            color: var(--text-color); 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            margin-left: 5px; 
             white-space: nowrap;
+            letter-spacing: 0.01em;
         }
         
         .control-button { 
-            background-color: transparent; color: var(--text-color); border: none; 
-            padding: 8px 14px; border-radius: 10px; cursor: pointer; 
-            transition: background-color 0.2s; font-size: 0.95rem; 
-            display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 500; 
+            background-color: rgba(255,255,255,0.02);
+            color: var(--text-color); 
+            border: 1px solid rgba(120,120,128,0.16);
+            padding: 7px 16px; 
+            border-radius: 999px; 
+            cursor: pointer; 
+            transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease, border-color 0.18s ease;
+            font-size: 0.9rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            text-decoration: none; 
+            font-weight: 500; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
-        .control-button:hover { background-color: rgba(150, 150, 150, 0.15); }
+
+        .control-button i {
+            font-size: 0.95rem;
+        }
+
+        .control-button:hover { 
+            background-color: rgba(120,120,128,0.08);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            border-color: rgba(120,120,128,0.25);
+            transform: translateY(-1px);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+        }
         
-        .control-button.primary { background-color: var(--apple-accent); color: white; }
-        .control-button.primary:hover { background-color: #E6362C; }
+        .control-button.primary { 
+            background: linear-gradient(135deg, var(--apple-accent), #5AC8FA);
+            color: white; 
+            border-color: rgba(10,132,255,0.7);
+            box-shadow: 0 14px 30px rgba(10,132,255,0.4);
+        }
+
+        .control-button.primary:hover { 
+            background: linear-gradient(135deg, #0076FF, #4FB9F5);
+            box-shadow: 0 18px 40px rgba(10,132,255,0.55);
+        }
 
         /* --- MENU DÉROULANT CONTACT --- */
         .dropdown { position: relative; display: inline-block; }
@@ -116,13 +170,14 @@
             top: 50px; 
             left: 0;
             background-color: var(--menu-bg);
-            min-width: 290px; /* Largeur ajustée pour l'email */
-            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
-            border-radius: 12px;
+            min-width: 290px;
+            box-shadow: 0px 18px 45px rgba(0,0,0,0.28);
+            border-radius: 16px;
             padding: 6px;
             z-index: 1001;
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(150, 150, 150, 0.1);
+            backdrop-filter: blur(32px) saturate(1.6);
+            -webkit-backdrop-filter: blur(32px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.75);
             animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -134,51 +189,99 @@
 
         .dropdown-content a {
             color: var(--text-color);
-            padding: 12px 12px;
+            padding: 10px 12px;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.9rem;
-            transition: background 0.15s;
+            transition: background 0.18s ease, transform 0.12s ease;
             cursor: pointer;
         }
 
         .dropdown-content a:hover {
-            background-color: rgba(150, 150, 150, 0.12);
+            background-color: rgba(120,120,128,0.10);
+            transform: translateY(-1px);
         }
 
-        .dropdown-content i { width: 20px; text-align: center; color: var(--apple-accent); }
+        .dropdown-content i { 
+            width: 20px; 
+            text-align: center; 
+            color: var(--apple-accent); 
+        }
         
-        .info-text { font-weight: 400; }
+        .info-text { 
+            font-weight: 400; 
+        }
 
         .show { display: block; }
 
-        @media print { #main-control-bar { display: none; } }
-        /* Sur mobile, on cache le titre pour gagner de la place */
-        @media (max-width: 650px) { .title-text { display: none; } }
+        @media print { 
+            #main-control-bar { display: none; } 
+        }
 
+        /* Sur mobile, on cache le titre pour gagner de la place */
+        @media (max-width: 650px) { 
+            .title-text { display: none; } 
+        }
 
         /* --- CONTENEUR PDF --- */
         .pdf-wrapper {
-            padding-top: 100px; height: 100%; width: 100%;
+            padding-top: 100px; 
+            height: 100%; 
+            width: 100%;
             overflow-y: auto; 
-            display: flex; justify-content: center; align-items: flex-start; 
-            padding-bottom: 50px;
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            padding-bottom: 60px;
         }
 
         .pdf-document-frame {
-            max-width: 900px; width: 92%; 
-            min-height: calc(100vh - 140px);
-            margin-bottom: 40px; box-shadow: var(--document-shadow); 
-            border-radius: 8px; overflow: hidden; background: #FFFFFF;
+            max-width: 900px; 
+            width: 92%; 
+            min-height: calc(100vh - 160px);
+            margin-bottom: 40px; 
+            border-radius: 24px; 
+            overflow: hidden; 
+
+            /* Effet verre dépoli type Apple */
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(18px) saturate(1.3);
+            -webkit-backdrop-filter: blur(18px) saturate(1.3);
+            border: 1px solid rgba(255,255,255,0.85);
+
+            /* Ombre + pulsation */
+            box-shadow: var(--document-shadow);
+            animation: applePulseBig 6s ease-in-out infinite;
+            transform-origin: center;
         }
         
-        .pdf-container { width: 100%; height: 100%; min-height: 850px; display: block; }
+        .pdf-container { 
+            width: 100%; 
+            height: 100%; 
+            min-height: 850px; 
+            display: block; 
+        }
         
-        .fallback-message { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-color); text-align: center; padding: 20px; }
-        .fallback-message .control-button { margin-top: 20px; background-color: var(--apple-accent); color: white; }
+        .fallback-message { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            color: var(--text-color); 
+            text-align: center; 
+            padding: 20px; 
+        }
+
+        .fallback-message .control-button { 
+            margin-top: 20px; 
+            background: linear-gradient(135deg, var(--apple-accent), #5AC8FA); 
+            color: white; 
+            border-color: rgba(10,132,255,0.7);
+        }
     </style>
 </head>
 <body>
@@ -255,19 +358,15 @@
     <script>
         /* --- FONCTION INTELLIGENTE DE COPIE --- */
         function copyToClipboard(text, event) {
-            // Copie le texte dans le presse-papier
             navigator.clipboard.writeText(text).then(() => {
                 const iconElement = event.target.closest('a').querySelector('i');
                 
-                // Sauvegarde l'état original
                 const originalClass = iconElement.className;
                 const originalColor = iconElement.style.color;
                 
-                // Change l'icône en "Validé" vert
                 iconElement.className = "fas fa-check";
                 iconElement.style.color = "#34C759"; 
                 
-                // Rétablit l'icône après 1.5 seconde
                 setTimeout(() => {
                     iconElement.className = originalClass;
                     iconElement.style.color = originalColor;
