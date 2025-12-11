@@ -6,8 +6,27 @@
     <title>CV - Daniel Neau-Inizan | Portfolio</title>
     <meta name="description" content="CV de Daniel Neau-Inizan - Profil professionnel et compétences." />
     
-    <!-- Icônes FontAwesome -->
+    <!-- Icônes FontAwesome (pour les images du menu) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- SEO : Données structurées pour que Google vous identifie correctement -->
+    <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Person",
+      "name": "Daniel Neau-Inizan",
+      "jobTitle": "Développeur",
+      "url": "",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "34b rue des sources",
+        "addressLocality": "Saint-Pathus",
+        "addressCountry": "FR"
+      },
+      "email": "neauinizan.daniel@gmail.com",
+      "telephone": "+33761077231"
+    }
+    </script>
     
     <style>
         /* --- VARIABLES DE THÈME --- */
@@ -35,9 +54,28 @@
         /* --- STRUCTURE GLOBALE --- */
         html, body {
             height: 100%; width: 100%; margin: 0; padding: 0;
-            background: var(--bg-base); overflow: hidden;
+            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text-color);
+
+            /* FOND ANIMÉ */
+            background: linear-gradient(-45deg, #F2F2F7, #e0e0eb, #F2F2F7, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        /* Fond animé sombre */
+        @media (prefers-color-scheme: dark) {
+            html, body {
+                background: linear-gradient(-45deg, #1C1C1E, #2c2c2e, #000000);
+                background-size: 400% 400%;
+            }
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* --- BARRE DE NAVIGATION FLOTTANTE --- */
@@ -78,8 +116,7 @@
             top: 50px; 
             left: 0;
             background-color: var(--menu-bg);
-            /* Largeur auto ajustée pour votre email, mais avec un min pour l'esthétique */
-            min-width: 280px; 
+            min-width: 290px; /* Largeur ajustée pour l'email */
             box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
             border-radius: 12px;
             padding: 6px;
@@ -89,7 +126,7 @@
             animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Animation d'ouverture douce */
+        /* Animation d'ouverture fluide */
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -105,6 +142,7 @@
             border-radius: 8px;
             font-size: 0.9rem;
             transition: background 0.15s;
+            cursor: pointer;
         }
 
         .dropdown-content a:hover {
@@ -147,7 +185,7 @@
 
     <div class="custom-controls" id="main-control-bar">
         
-        <!-- GAUCHE : MENU CONTACT + NOM -->
+        <!-- GROUPE GAUCHE : MENU CONTACT + TITRE -->
         <div class="controls-group">
             <div class="dropdown">
                 <button onclick="toggleMenu()" class="control-button" title="Me contacter">
@@ -156,21 +194,22 @@
                     <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 2px; opacity: 0.6;"></i>
                 </button>
                 
-                <!-- VOS INFORMATIONS -->
+                <!-- MENU DÉROULANT -->
                 <div id="contactDropdown" class="dropdown-content">
-                    <!-- Email -->
-                    <a href="mailto:neauinizan.daniel@gmail.com">
+                    
+                    <!-- Email (Action : Ouvre mail + Copie texte) -->
+                    <a href="mailto:neauinizan.daniel@gmail.com" onclick="copyToClipboard('neauinizan.daniel@gmail.com', event)">
                         <i class="fas fa-envelope"></i> 
                         <span class="info-text">neauinizan.daniel@gmail.com</span>
                     </a>
                     
-                    <!-- Téléphone -->
-                    <a href="tel:+33761077231">
+                    <!-- Téléphone (Action : Appelle + Copie numéro) -->
+                    <a href="tel:+33761077231" onclick="copyToClipboard('0761077231', event)">
                         <i class="fas fa-phone-alt"></i> 
                         <span class="info-text">07 61 07 72 31</span>
                     </a>
                     
-                    <!-- Adresse (Lien Maps) -->
+                    <!-- Adresse (Action : Ouvre Google Maps) -->
                     <a href="https://www.google.com/maps/search/?api=1&query=34b+rue+des+sources+Saint-Pathus" target="_blank">
                         <i class="fas fa-map-marker-alt"></i> 
                         <span class="info-text">34b rue des Sources, St-Pathus</span>
@@ -181,7 +220,7 @@
             <span class="title-text">CV Daniel Neau-Inizan</span>
         </div>
 
-        <!-- DROITE : BOUTONS ACTIONS -->
+        <!-- GROUPE DROITE : ACTIONS PDF -->
         <div class="controls-group">
             <button class="control-button" onclick="toggleFullScreen()" title="Plein écran">
                 <i class="fas fa-expand"></i>
@@ -193,7 +232,7 @@
         </div>
     </div>
 
-    <!-- AFFICHAGE DU PDF -->
+    <!-- ZONE D'AFFICHAGE DU PDF -->
     <div class="pdf-wrapper">
         <div class="pdf-document-frame">
             <object
@@ -214,12 +253,36 @@
     </div>
 
     <script>
-        // Gestion du Menu Contact
+        /* --- FONCTION INTELLIGENTE DE COPIE --- */
+        function copyToClipboard(text, event) {
+            // Copie le texte dans le presse-papier
+            navigator.clipboard.writeText(text).then(() => {
+                const iconElement = event.target.closest('a').querySelector('i');
+                
+                // Sauvegarde l'état original
+                const originalClass = iconElement.className;
+                const originalColor = iconElement.style.color;
+                
+                // Change l'icône en "Validé" vert
+                iconElement.className = "fas fa-check";
+                iconElement.style.color = "#34C759"; 
+                
+                // Rétablit l'icône après 1.5 seconde
+                setTimeout(() => {
+                    iconElement.className = originalClass;
+                    iconElement.style.color = originalColor;
+                }, 1500);
+            }).catch(err => {
+                console.error('Erreur copie :', err);
+            });
+        }
+
+        /* --- GESTION OUVERTURE/FERMETURE MENU --- */
         function toggleMenu() {
             document.getElementById("contactDropdown").classList.toggle("show");
         }
 
-        // Ferme le menu si on clique n'importe où ailleurs
+        // Ferme le menu si on clique en dehors
         window.onclick = function(event) {
             if (!event.target.matches('.control-button') && !event.target.closest('.control-button')) {
                 var dropdowns = document.getElementsByClassName("dropdown-content");
@@ -232,7 +295,7 @@
             }
         }
 
-        // Gestion du Plein Écran
+        /* --- GESTION PLEIN ÉCRAN --- */
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
@@ -245,7 +308,7 @@
             }
         }
         
-        // Nettoyage (au cas où plusieurs barres s'affichent lors de tests)
+        /* --- NETTOYAGE AU CHARGEMENT (Évite les bugs de rafraîchissement) --- */
         document.addEventListener('DOMContentLoaded', () => {
             const controlBars = document.querySelectorAll('.custom-controls'); 
             if (controlBars.length > 1) {
