@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CV - Daniel Neau-Inizan | iOS Style</title>
+    <title>CV - Daniel Neau-Inizan | Portfolio Final</title>
     <meta
         name="description"
         content="CV de Daniel Neau-Inizan - Profil professionnel et compétences."
@@ -11,50 +11,44 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* --- VARIABLES DE THÈME (Style iOS Adaptatif) --- */
+        /* --- VARIABLES DE THÈME --- */
         :root {
-            --apple-accent: #FF3B30; /* Un rouge vibrant style iOS */
-            --bg-base: #F2F2F7; /* Gris clair par défaut (Light Mode) */
-            --bg-dark: #1C1C1E; /* Gris très sombre (Dark Mode) */
+            --apple-accent: #FF3B30; 
+            --bg-base: #F2F2F7; 
+            --bg-dark: #1C1C1E; 
             --text-color: #000000;
-            --control-bg: rgba(255, 255, 255, 0.8); /* Frosted Glass Light */
+            --control-bg: rgba(255, 255, 255, 0.8);
             --radius-large: 14px;
-            --shadow-depth: 0 8px 20px rgba(0, 0, 0, 0.15);
+            --document-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         }
 
-        /* Mode Sombre (Par défaut dans ce style pour l'effet "pro") */
+        /* Mode Sombre Adaptatif */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-base: var(--bg-dark);
                 --text-color: #FFFFFF;
-                --control-bg: rgba(28, 28, 30, 0.7); /* Frosted Glass Dark */
-                --shadow-depth: 0 8px 20px rgba(0, 0, 0, 0.5);
+                --control-bg: rgba(28, 28, 30, 0.7);
             }
         }
         
         /* --- STRUCTURE DE BASE --- */
         html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background: var(--bg-base); 
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Police système Apple */
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            background: var(--bg-base); overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text-color);
         }
 
-        /* --- BARRE DE CONTRÔLE FLOTTANTE (iOS Style) --- */
-        .custom-controls {
+        /* --- BARRE DE CONTRÔLE UNIQUE FLOTTANTE (iOS Style) --- */
+        #main-control-bar {
             position: fixed;
-            top: 20px; /* Décalé du bord pour un effet "flottant" */
+            top: 20px; 
             left: 50%;
             transform: translateX(-50%);
-            width: 95%; /* Moins de 100% pour bien voir le flottement */
-            max-width: 800px; /* Limiter la largeur sur grand écran */
+            width: 95%; 
+            max-width: 800px; 
             height: 55px;
             
-            /* Verre Dépoli (Frosted Glass) */
             background: var(--control-bg);
             backdrop-filter: blur(25px) saturate(1.5); 
             
@@ -63,109 +57,60 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 15px;
-            border-radius: var(--radius-large); /* Coins arrondis iOS */
-            box-shadow: var(--shadow-depth);
-            transition: all 0.3s ease;
+            border-radius: var(--radius-large); 
+            box-shadow: var(--document-shadow);
         }
 
-        @media print { .custom-controls { display: none; } }
-
-        .controls-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .controls-group span {
-            color: var(--text-color);
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        /* Boutons (Ultra-légers et arrondis) */
-        .control-button {
-            background-color: transparent;
-            color: var(--text-color);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 10px; /* Coins arrondis spécifiques aux boutons */
-            cursor: pointer;
-            transition: background-color 0.15s;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .control-button:hover {
-            background-color: rgba(150, 150, 150, 0.1); /* Survol très subtil */
-            transform: none; /* Supprimer la translation */
-        }
+        /* Styles des boutons */
+        .controls-group { display: flex; gap: 10px; align-items: center; }
+        .controls-group span { color: var(--text-color); font-weight: 600; font-size: 0.9rem; }
+        .control-button { background-color: transparent; color: var(--text-color); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: background-color 0.15s; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 500; }
+        .control-button:hover { background-color: rgba(150, 150, 150, 0.1); transform: none; }
+        .control-button.primary { background-color: var(--apple-accent); color: white; }
+        .control-button.primary:hover { background-color: #E6362C; }
         
-        .control-button.primary {
-             /* Bouton d'action principal (Download) en couleur accentuée */
-             background-color: var(--apple-accent);
-             color: white;
-        }
-        
-        .control-button.primary:hover {
-             background-color: #E6362C;
-        }
+        /* Masquage de la barre en cas d'impression native (Ctrl+P) */
+        @media print { #main-control-bar { display: none; } }
+        @media (max-width: 600px) { .controls-group .btn-text { display: none; } }
 
 
-        /* --- CONTENEUR PDF (Décalé pour laisser la place) --- */
+        /* --- CONTENEUR PDF CENTRÉ (Document Flottant) --- */
         .pdf-wrapper {
-            padding-top: 90px; /* Espace pour la barre de contrôle flottante */
-            height: 100%;
-            width: 100%;
+            padding-top: 90px; height: 100%; width: 100%;
+            overflow-y: auto; 
+            display: flex; justify-content: center; align-items: flex-start; 
+            padding-bottom: 50px;
+        }
+
+        .pdf-document-frame {
+            max-width: 850px; width: 90%; min-height: calc(100vh - 120px);
+            margin-top: 30px; box-shadow: var(--document-shadow); 
+            border-radius: 6px; overflow: hidden; background: #FFFFFF;
         }
         
         .pdf-container {
-            width: 100%;
-            height: 100%;
-            display: block;
+            width: 100%; height: 100%; min-height: 800px; display: block;
         }
 
         /* Styles de fallback */
         .fallback-message {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-color);
-            text-align: center;
-            background: var(--bg-base); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; color: var(--text-color); text-align: center; background: var(--bg-base); 
         }
         
         .fallback-message .control-button { 
-            position: static;
-            margin-top: 20px;
-            color: white;
-            background-color: var(--apple-accent);
-        }
-        
-        @media (max-width: 600px) {
-            .controls-group .btn-text {
-                display: none; /* Masquer le texte du bouton sur petit écran */
-            }
+            position: static; margin-top: 20px; color: white; background-color: var(--apple-accent);
         }
     </style>
 </head>
 <body>
 
-    <div class="custom-controls">
+    <div class="custom-controls" id="main-control-bar">
         <div class="controls-group">
             <span>CV Daniel Neau-Inizan</span>
         </div>
 
         <div class="controls-group">
-            <button class="control-button" onclick="printCV()" title="Imprimer le document">
-                <i class="fas fa-print"></i>
-            </button>
-            
             <button class="control-button" onclick="toggleFullScreen()" title="Passer en plein écran">
                 <i class="fas fa-expand"></i>
             </button>
@@ -178,31 +123,30 @@
     </div>
 
     <div class="pdf-wrapper">
-        <object
-            data="daniel-neau-inizan-cv.pdf"
-            type="application/pdf"
-            class="pdf-container"
-            aria-label="CV de Daniel Neau-Inizan"
-        >
-            <div class="fallback-message">
-                <h2>Impossible d'afficher le PDF directement.</h2>
-                <p>Votre navigateur ne supporte pas l'affichage de PDF intégré.</p>
-                <a
-                    href="daniel-neau-inizan-cv.pdf"
-                    class="control-button"
-                    download
-                >
-                    Cliquez ici pour télécharger le CV
-                </a>
-            </div>
-        </object>
+        <div class="pdf-document-frame">
+            <object
+                data="daniel-neau-inizan-cv.pdf"
+                type="application/pdf"
+                class="pdf-container"
+                aria-label="CV de Daniel Neau-Inizan"
+            >
+                <div class="fallback-message">
+                    <h2>Impossible d'afficher le PDF directement.</h2>
+                    <p>Votre navigateur ne supporte pas l'affichage de PDF intégré.</p>
+                    <a
+                        href="daniel-neau-inizan-cv.pdf"
+                        class="control-button"
+                        download
+                    >
+                        Cliquez ici pour télécharger le CV
+                    </a>
+                </div>
+            </object>
+        </div>
     </div>
 
     <script>
-        function printCV() {
-            window.print();
-        }
-
+        // Fonction Plein Écran (conservée)
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
@@ -214,6 +158,16 @@
                 }
             }
         }
+        
+        // FIX : Script pour supprimer les duplicatas d'environnement (CodeSandbox)
+        document.addEventListener('DOMContentLoaded', () => {
+            const controlBars = document.querySelectorAll('.custom-controls'); 
+            if (controlBars.length > 1) {
+                for (let i = 1; i < controlBars.length; i++) {
+                    controlBars[i].remove();
+                }
+            }
+        });
     </script>
 </body>
 </html>
