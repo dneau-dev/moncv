@@ -1,37 +1,203 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CV - Daniel Neau-Inizan</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      overflow: hidden;
-    }
-    iframe {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      outline: none;
-      margin: 0;
-      padding: 0;
-      display: block;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV - Daniel Neau-Inizan | Visualiseur Avancé</title>
+    <meta
+      name="description"
+      content="CV de Daniel Neau-Inizan - Profil professionnel et compétences."
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
 
-  
-    iframe:focus {
-      outline: none;
-    }
-  </style>
-</head>
-<body>
-  <iframe src="daniel-neau-inizan-cv.pdf" title="CV PDF de Daniel Neau-Inizan"></iframe>
-</body>
+    <style>
+      :root {
+        --accent-color: #d07272; /* Couleur principale */
+        --glass-bg: rgba(45, 45, 45, 0.7); /* Fond semi-transparent */
+        --text-light: #ffffff;
+        --button-hover: #1e1e1e;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #252526; /* Fond sombre pour l'effet professionnel */
+        overflow: hidden;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      /* --- BARRE DE CONTRÔLE FLOTTANTE (COMPLEXIFICATION) --- */
+      .custom-controls {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background: var(--glass-bg);
+        /* L'effet Glassmorphism */
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease-out;
+      }
+
+      /* Masquer la barre en mode impression */
+      @media print {
+        .custom-controls {
+          display: none;
+        }
+      }
+
+      .controls-group {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .controls-group span {
+        color: var(--text-light);
+        font-weight: 500;
+      }
+
+      .control-button {
+        background-color: var(--accent-color);
+        color: var(--text-light);
+        border: none;
+        padding: 10px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none; /* Pour le bouton de téléchargement */
+      }
+
+      .control-button:hover {
+        background-color: var(--button-hover);
+        transform: translateY(-1px);
+      }
+
+      /* --- CONTENEUR PDF (Décalé par la barre de contrôle) --- */
+      .pdf-wrapper {
+        padding-top: 60px; /* Espace pour la barre de contrôle */
+        height: 100%;
+        width: 100%;
+      }
+
+      .pdf-container {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* Styles de fallback conservés */
+      .fallback-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-light);
+        text-align: center;
+        background: #444; /* Fond pour le message d'erreur */
+      }
+
+      .fallback-message .control-button {
+        /* Réutilise le style de bouton pour le fallback */
+        position: static;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="custom-controls">
+      <div class="controls-group">
+        <span>CV Daniel Neau-Inizan</span>
+      </div>
+
+      <div class="controls-group">
+        <a
+          href="daniel-neau-inizan-cv.pdf"
+          class="control-button"
+          download
+          title="Télécharger le fichier PDF"
+        >
+          <i class="fas fa-download"></i>
+          <span class="btn-text">Télécharger</span>
+        </a>
+
+        <button
+          class="control-button"
+          onclick="printCV()"
+          title="Imprimer le document"
+        >
+          <i class="fas fa-print"></i>
+        </button>
+
+        <button
+          class="control-button"
+          onclick="toggleFullScreen()"
+          title="Passer en plein écran"
+        >
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="pdf-wrapper">
+      <object
+        data="daniel-neau-inizan-cv.pdf"
+        type="application/pdf"
+        class="pdf-container"
+        aria-label="CV de Daniel Neau-Inizan"
+      >
+        <div class="fallback-message">
+          <h2>Impossible d'afficher le PDF directement.</h2>
+          <p>Votre navigateur ne supporte pas l'affichage de PDF intégré.</p>
+          <a href="daniel-neau-inizan-cv.pdf" class="control-button" download>
+            Cliquez ici pour télécharger le CV
+          </a>
+        </div>
+      </object>
+    </div>
+
+    <script>
+      /**
+       * Lance l'impression du document.
+       * Le CSS assure que seule la zone du PDF est imprimée.
+       */
+      function printCV() {
+        window.print();
+      }
+
+      /**
+       * Active/Désactive le mode plein écran (Full-screen API).
+       */
+      function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch((err) => {
+            alert(
+              `Erreur: Impossible d'activer le mode plein écran. Le navigateur pourrait bloquer cette fonction. ${err.message}`
+            );
+          });
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
+      }
+    </script>
+  </body>
 </html>
