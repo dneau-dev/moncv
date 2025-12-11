@@ -1,78 +1,54 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="theme-light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CV - Daniel Neau-Inizan</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --primary-color: #2c3e50;
-      --accent-color: #3498db;
-      --bg-color: #f4f7f6;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daniel Neau-Inizan | Interactive CV Environment</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: #333;
-      line-height: 1.6;
-    }
+    <style>
+        /* --- :: BASE & THEME :: --- */
+        :root {
+            --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    /* Zone de contenu principal (exemple : lettre de motivation, portfolio) */
-    .main-content {
-      max-width: 800px;
-      margin: 40px;
-      padding-right: 320px; /* Espace pour ne pas être caché par le CV réduit */
-    }
+        .theme-light {
+            --bg-primary: #f5f7fa; --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a; --text-secondary: #5c677d;
+            --border-color: #e6e8eb;
+            --accent-primary: #3b82f6; --accent-secondary: #10b981;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
 
-    h1 { color: var(--primary-color); }
-    p { margin-bottom: 1.5em; }
+        .theme-dark {
+            --bg-primary: #121826; --bg-secondary: #1d2333;
+            --text-primary: #e2e8f0; --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --accent-primary: #60a5fa; --accent-secondary: #34d399;
+            --shadow-color: rgba(0, 0, 0, 0.25);
+        }
 
-    /* Conteneur du CV Flottant */
-    .cv-floating-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      bottom: 20px;
-      width: 45%;
-      min-width: 320px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      z-index: 1000;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.05);
-    }
+        * { box-sizing: border-box; }
 
-    /* Barre d'en-tête du CV */
-    .cv-header {
-      background: var(--primary-color);
-      color: white;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer; /* Permet de cliquer pour réduire/agrandir */
-    }
+        body {
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary); color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            overflow: hidden;
+        }
 
-    .cv-title {
-      font-weight: 600;
-      font-size: 1.1em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        /* --- :: MAIN CONTENT & SCROLL ANIMATIONS :: --- */
+        .main-content {
+            width: 100%; max-width: 720px;
+            margin-left: 60px; padding: 120px 0;
+            height: 100vh; overflow-y: auto;
+            scrollbar-width: thin;
+        }
 
-    .cv-controls button {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      width: 32px;
-      height: 32px;
-      border-ra
+        .content-section {
+            padding: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition
