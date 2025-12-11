@@ -7,7 +7,7 @@ Ce dépôt contient mon CV au format web, accessible directement depuis (https:/
 
 ## Accès au CV
 - **Version en ligne** : PDF(https://dneau-dev.github.io/moncv/)
-
+- **Version en PDF**  : https://github.com/dneau-dev/moncv/blob/main/daniel-neau-inizan-cv.pdf
 ## Comment contribuer ?
 Si vous souhaitez me faire part de suggestions ou d'améliorations, n'hésitez pas à ouvrir une *issue* ou à me contacter directement.
 
