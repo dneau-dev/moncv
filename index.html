@@ -20,6 +20,7 @@
             --control-bg: rgba(255, 255, 255, 0.8);
             --radius-large: 14px;
             --document-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            --menu-bg: rgba(255, 255, 255, 0.95);
         }
 
         /* Mode Sombre Adaptatif */
@@ -28,6 +29,7 @@
                 --bg-base: var(--bg-dark);
                 --text-color: #FFFFFF;
                 --control-bg: rgba(28, 28, 30, 0.7);
+                --menu-bg: rgba(44, 44, 46, 0.95);
             }
         }
         
@@ -48,18 +50,69 @@
             padding: 0 15px; border-radius: var(--radius-large); box-shadow: var(--document-shadow);
         }
 
-        /* Styles des boutons (omitted for brevity) */
-        .controls-group { display: flex; gap: 10px; align-items: center; }
-        .controls-group span { color: var(--text-color); font-weight: 600; font-size: 0.9rem; }
+        /* Styles des boutons */
+        .controls-group { display: flex; gap: 10px; align-items: center; position: relative; }
+        .controls-group .title-text { color: var(--text-color); font-weight: 600; font-size: 0.9rem; margin-left: 10px;}
+        
         .control-button { background-color: transparent; color: var(--text-color); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: background-color 0.15s; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 500; }
         .control-button:hover { background-color: rgba(150, 150, 150, 0.1); transform: none; }
         .control-button.primary { background-color: var(--apple-accent); color: white; }
         .control-button.primary:hover { background-color: #E6362C; }
+
+        /* --- STYLES POUR LE MENU CONTACT --- */
+        .dropdown { position: relative; display: inline-block; }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 45px; /* Juste en dessous de la barre */
+            left: 0;
+            background-color: var(--menu-bg);
+            min-width: 260px; /* Élargi pour l'adresse */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 5px;
+            z-index: 1001;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(150, 150, 150, 0.1);
+        }
+
+        .dropdown-content a {
+            color: var(--text-color);
+            padding: 10px 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: rgba(150, 150, 150, 0.15);
+        }
+        
+        /* Petit ajustement pour que le texte de l'adresse ne déborde pas */
+        .dropdown-content span.info-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Classe pour afficher le menu via JS */
+        .show { display: block; animation: fadeIn 0.2s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media print { #main-control-bar { display: none; } }
-        @media (max-width: 600px) { .controls-group .btn-text { display: none; } }
+        @media (max-width: 600px) { .controls-group .btn-text { display: none; } .controls-group .title-text { display: none; } }
 
 
-        /* --- CONTENEUR PDF CENTRÉ (RÉSOLUTION LARGEUR) --- */
+        /* --- CONTENEUR PDF --- */
         .pdf-wrapper {
             padding-top: 90px; height: 100%; width: 100%;
             overflow-y: auto; 
@@ -68,7 +121,6 @@
         }
 
         .pdf-document-frame {
-            /* CECI LIMITE LA LARGEUR DU LECTEUR PDF */
             max-width: 850px; 
             width: 90%; 
             min-height: calc(100vh - 120px);
@@ -76,11 +128,8 @@
             border-radius: 6px; overflow: hidden; background: #FFFFFF;
         }
         
-        .pdf-container {
-            width: 100%; height: 100%; min-height: 800px; display: block;
-        }
-
-        /* Styles de fallback (omitted for brevity) */
+        .pdf-container { width: 100%; height: 100%; min-height: 800px; display: block; }
+        
         .fallback-message { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-color); text-align: center; background: var(--bg-base); }
         .fallback-message .control-button { position: static; margin-top: 20px; color: white; background-color: var(--apple-accent); }
     </style>
@@ -88,10 +137,40 @@
 <body>
 
     <div class="custom-controls" id="main-control-bar">
+        
+        <!-- GROUPE GAUCHE : MENU CONTACT + TITRE -->
         <div class="controls-group">
-            <span>CV Daniel Neau-Inizan</span>
+            <div class="dropdown">
+                <button onclick="toggleMenu()" class="control-button">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contact</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 2px;"></i>
+                </button>
+                <div id="contactDropdown" class="dropdown-content">
+                    <!-- EMAIL -->
+                    <a href="mailto:neauinizan.daniel@gmail.com">
+                        <i class="fas fa-at"></i> 
+                        <span class="info-text">neauinizan.daniel@gmail.com</span>
+                    </a>
+                    
+                    <!-- TELEPHONE -->
+                    <a href="tel:+33761077231">
+                        <i class="fas fa-phone"></i> 
+                        <span class="info-text">07 61 07 72 31</span>
+                    </a>
+                    
+                    <!-- ADRESSE (Lien vers Google Maps) -->
+                    <a href="https://www.google.com/maps/search/?api=1&query=34b+rue+des+sources+saint+pathus" target="_blank">
+                        <i class="fas fa-map-marker-alt"></i> 
+                        <span class="info-text">34b rue des sources, St-Pathus</span>
+                    </a>
+                </div>
+            </div>
+            
+            <span class="title-text">CV Daniel Neau-Inizan</span>
         </div>
 
+        <!-- GROUPE DROITE : ACTIONS -->
         <div class="controls-group">
             <button class="control-button" onclick="toggleFullScreen()" title="Passer en plein écran">
                 <i class="fas fa-expand"></i>
@@ -127,6 +206,24 @@
     </div>
 
     <script>
+        /* Fonction pour afficher/masquer le menu contact */
+        function toggleMenu() {
+            document.getElementById("contactDropdown").classList.toggle("show");
+        }
+
+        /* Fermer le menu si on clique ailleurs sur la page */
+        window.onclick = function(event) {
+            if (!event.target.matches('.control-button') && !event.target.closest('.control-button')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
@@ -139,7 +236,6 @@
             }
         }
         
-        // FIX : Script pour supprimer les duplicatas d'environnement
         document.addEventListener('DOMContentLoaded', () => {
             const controlBars = document.querySelectorAll('.custom-controls'); 
             if (controlBars.length > 1) {
