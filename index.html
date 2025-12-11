@@ -39,42 +39,27 @@
             color: var(--text-color);
         }
 
-        /* --- BARRE DE CONTRÔLE UNIQUE FLOTTANTE (iOS Style) --- */
+        /* --- BARRE DE CONTRÔLE UNIQUE FLOTTANTE --- */
         #main-control-bar {
-            position: fixed;
-            top: 20px; 
-            left: 50%;
-            transform: translateX(-50%);
-            width: 95%; 
-            max-width: 800px; 
-            height: 55px;
-            
-            background: var(--control-bg);
-            backdrop-filter: blur(25px) saturate(1.5); 
-            
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-            border-radius: var(--radius-large); 
-            box-shadow: var(--document-shadow);
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 800px; height: 55px;
+            background: var(--control-bg); backdrop-filter: blur(25px) saturate(1.5); 
+            z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; border-radius: var(--radius-large); box-shadow: var(--document-shadow);
         }
 
-        /* Styles des boutons */
+        /* Styles des boutons (omitted for brevity) */
         .controls-group { display: flex; gap: 10px; align-items: center; }
         .controls-group span { color: var(--text-color); font-weight: 600; font-size: 0.9rem; }
         .control-button { background-color: transparent; color: var(--text-color); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: background-color 0.15s; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 500; }
         .control-button:hover { background-color: rgba(150, 150, 150, 0.1); transform: none; }
         .control-button.primary { background-color: var(--apple-accent); color: white; }
         .control-button.primary:hover { background-color: #E6362C; }
-        
-        /* Masquage de la barre en cas d'impression native (Ctrl+P) */
         @media print { #main-control-bar { display: none; } }
         @media (max-width: 600px) { .controls-group .btn-text { display: none; } }
 
 
-        /* --- CONTENEUR PDF CENTRÉ (Document Flottant) --- */
+        /* --- CONTENEUR PDF CENTRÉ (RÉSOLUTION LARGEUR) --- */
         .pdf-wrapper {
             padding-top: 90px; height: 100%; width: 100%;
             overflow-y: auto; 
@@ -83,7 +68,10 @@
         }
 
         .pdf-document-frame {
-            max-width: 850px; width: 90%; min-height: calc(100vh - 120px);
+            /* CECI LIMITE LA LARGEUR DU LECTEUR PDF */
+            max-width: 850px; 
+            width: 90%; 
+            min-height: calc(100vh - 120px);
             margin-top: 30px; box-shadow: var(--document-shadow); 
             border-radius: 6px; overflow: hidden; background: #FFFFFF;
         }
@@ -92,15 +80,9 @@
             width: 100%; height: 100%; min-height: 800px; display: block;
         }
 
-        /* Styles de fallback */
-        .fallback-message {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: var(--text-color); text-align: center; background: var(--bg-base); 
-        }
-        
-        .fallback-message .control-button { 
-            position: static; margin-top: 20px; color: white; background-color: var(--apple-accent);
-        }
+        /* Styles de fallback (omitted for brevity) */
+        .fallback-message { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-color); text-align: center; background: var(--bg-base); }
+        .fallback-message .control-button { position: static; margin-top: 20px; color: white; background-color: var(--apple-accent); }
     </style>
 </head>
 <body>
@@ -114,7 +96,6 @@
             <button class="control-button" onclick="toggleFullScreen()" title="Passer en plein écran">
                 <i class="fas fa-expand"></i>
             </button>
-            
             <a href="daniel-neau-inizan-cv.pdf" class="control-button primary" download title="Télécharger le fichier PDF">
                 <i class="fas fa-download"></i>
                 <span class="btn-text">PDF</span>
@@ -146,7 +127,6 @@
     </div>
 
     <script>
-        // Fonction Plein Écran (conservée)
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
@@ -159,7 +139,7 @@
             }
         }
         
-        // FIX : Script pour supprimer les duplicatas d'environnement (CodeSandbox)
+        // FIX : Script pour supprimer les duplicatas d'environnement
         document.addEventListener('DOMContentLoaded', () => {
             const controlBars = document.querySelectorAll('.custom-controls'); 
             if (controlBars.length > 1) {
