@@ -1,14 +1,1 @@
-/* -------------------------------------------------- */
-/* 🌟 ANIMATION APPLE – PULSATION LUMINEUSE + GLITCH */
-@keyframes applePulseBig {
-    0%   { transform: scale(0.95); box-shadow: 0 0 10px rgba(0,122,255,0.2); }
-    25%  { transform: scale(1.05); box-shadow: 0 0 40px rgba(0,122,255,0.5); }
-    50%  { transform: scale(1);    box-shadow: 0 0 25px rgba(0,122,255,0.35); }
-    75%  { transform: scale(1.03); box-shadow: 0 0 45px rgba(0,122,255,0.55); }
-    100% { transform: scale(0.95); box-shadow: 0 0 10px rgba(0,122,255,0.2); }
-}
-
-/* Appliquer au conteneur PDF */
-.pdf-document-frame {
-    animation: applePulseBig 4s ease-in-out infinite;
-}
+/kill
