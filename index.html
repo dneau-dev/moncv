@@ -63,7 +63,7 @@
             <span class="title-text">CV Daniel Neau-Inizan</span>
         </div>
 
-        <!-- GROUPE DROITE : ACTIONS PDF -->
+        <!-- GROUPE DROITE : ACTIONS PDF (les nouveaux boutons seront ajoutés par JavaScript) -->
         <div class="controls-group">
             <button class="control-button" onclick="toggleFullScreen()" title="Plein écran">
                 <i class="fas fa-expand"></i>
@@ -95,63 +95,7 @@
         </div>
     </div>
 
-    <script>
-        function copyToClipboard(text, event) {
-            navigator.clipboard.writeText(text).then(() => {
-                const iconElement = event.target.closest('a').querySelector('i');
-
-                const originalClass = iconElement.className;
-                const originalColor = iconElement.style.color;
-
-                iconElement.className = "fas fa-check";
-                iconElement.style.color = "#34C759";
-
-                setTimeout(() => {
-                    iconElement.className = originalClass;
-                    iconElement.style.color = originalColor;
-                }, 1500);
-            }).catch(err => {
-                console.error('Erreur copie :', err);
-            });
-        }
-
-        function toggleMenu() {
-            document.getElementById("contactDropdown").classList.toggle("show");
-        }
-
-        // Ferme le menu si on clique en dehors
-        window.onclick = function(event) {
-            if (!event.target.matches('.control-button') && !event.target.closest('.control-button')) {
-                const dropdowns = document.getElementsByClassName("dropdown-content");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
-                }
-            }
-        };
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log("Erreur plein écran :", err);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const controlBars = document.querySelectorAll('.custom-controls');
-            if (controlBars.length > 1) {
-                for (let i = 1; i < controlBars.length; i++) {
-                    controlBars[i].remove();
-                }
-            }
-        });
-    </script>
+    <!-- JavaScript externe -->
+    <script src="script.js"></script>
 </body>
 </html>
