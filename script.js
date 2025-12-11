@@ -1,479 +1,869 @@
-// ============================================
-// CONFIGURATION ET CONSTANTES
-// ============================================
+/* =========================================================================
+ * CONFIG GÉNÉRALE
+ * ========================================================================= */
+
 const CONFIG = {
-    TOAST_DURATION: 3000,
-    DEBOUNCE_DELAY: 300,
-    STORAGE_KEYS: {
-        THEME: 'cv-theme-preference',
-        ANALYTICS: 'cv-analytics-data'
-    }
+  STORAGE_KEYS: {
+    THEME: 'cv-theme',
+    ANALYTICS: 'cv-analytics-events',
+  },
+  MAX_ANALYTICS_EVENTS: 100,
 };
 
-// ============================================
-// SYSTÈME DE TOAST (NOTIFICATIONS)
-// ============================================
-function showToast(message, type = 'success') {
-    // Supprimer les anciens toasts
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) {
-        existingToast.remove();
-    }
+// Version du CV (à mettre à jour quand tu modifies ton CV)
+const CV_VERSION = '2025-01-01';
 
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-    `;
-    
-    document.body.appendChild(toast);
-
-    // Forcer le reflow pour l'animation CSS
-    toast.offsetHeight;
-    toast.classList.add('show');
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, CONFIG.TOAST_DURATION);
-}
-
-// ============================================
-// COPIE DANS LE PRESSE-PAPIERS AMÉLIORÉE
-// ============================================
-async function copyToClipboard(text, event) {
-    try {
-        await navigator.clipboard.writeText(text);
-        
-        const iconElement = event.target.closest('a').querySelector('i');
-        const originalClass = iconElement.className;
-        const originalColor = iconElement.style.color;
-
-        iconElement.className = "fas fa-check";
-        iconElement.style.color = "#34C759";
-
-        showToast(`Copié : ${text}`, 'success');
-        trackEvent('contact', 'copy', text);
-
-        setTimeout(() => {
-            iconElement.className = originalClass;
-            iconElement.style.color = originalColor;
-        }, 1500);
-    } catch (err) {
-        console.error('Erreur copie :', err);
-        
-        // Fallback pour les anciens navigateurs
-        fallbackCopyToClipboard(text);
-        showToast('Copié (mode compatibilité)', 'success');
-    }
-}
-
-function fallbackCopyToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-9999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-        document.execCommand('copy');
-    } catch (err) {
-        console.error('Fallback copie échouée:', err);
-    }
-    
-    document.body.removeChild(textArea);
-}
-
-// ============================================
-// GESTION DU MENU DÉROULANT
-// ============================================
-function toggleMenu() {
-    const dropdown = document.getElementById("contactDropdown");
-    dropdown.classList.toggle("show");
-    
-    // Accessibilité : focus sur le premier lien
-    if (dropdown.classList.contains('show')) {
-        const firstLink = dropdown.querySelector('a');
-        if (firstLink) {
-            setTimeout(() => firstLink.focus(), 100);
-        }
-    }
-}
-
-function closeAllDropdowns() {
-    const dropdowns = document.getElementsByClassName("dropdown-content");
-    for (let dropdown of dropdowns) {
-        if (dropdown.classList.contains('show')) {
-            dropdown.classList.remove('show');
-        }
-    }
-}
-
-// Fermer le menu avec Échap (accessibilité)
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-        closeAllDropdowns();
-    }
-});
-
-// Fermer le menu si on clique en dehors
-window.onclick = function(event) {
-    if (!event.target.matches('.control-button') && !event.target.closest('.control-button')) {
-        closeAllDropdowns();
-    }
+// Zoom PDF
+const PDF_ZOOM = {
+  MIN: 0.8,
+  MAX: 2,
+  STEP: 0.1,
+  DEFAULT: 1,
 };
+let currentPdfZoom = PDF_ZOOM.DEFAULT;
 
-// ============================================
-// GESTION DU PLEIN ÉCRAN AMÉLIORÉE
-// ============================================
-function toggleFullScreen() {
-    const button = event.currentTarget;
-    const icon = button.querySelector('i');
-    
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement) {
-        // Entrer en plein écran
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-            elem.webkitRequestFullscreen();
-        } else if (elem.mozRequestFullScreen) {
-            elem.mozRequestFullScreen();
-        } else if (elem.msRequestFullscreen) {
-            elem.msRequestFullscreen();
-        }
-        
-        trackEvent('ui', 'fullscreen', 'enter');
-    } else {
-        // Sortir du plein écran
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
-        
-        trackEvent('ui', 'fullscreen', 'exit');
-    }
+// Statistiques visite (temps passé)
+let visitStartTime = Date.now();
+
+// Konami code pour l'easter egg
+const KONAMI_CODE = [
+  'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
+  'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'
+];
+let konamiIndex = 0;
+
+// Éléments globaux
+let scrollProgressBar = null;
+let backToTopButton = null;
+let isReadingMode = false;
+let isPresentationMode = false;
+let downloadSuggested = false;
+
+/* =========================================================================
+ * UTILITAIRES
+ * ========================================================================= */
+
+function debounce(fn, delay) {
+  let timer = null;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
 }
 
-// Mettre à jour l'icône selon l'état du plein écran
-function updateFullscreenIcon() {
-    const button = document.querySelector('button[onclick*="toggleFullScreen"]');
-    if (!button) return;
-    
-    const icon = button.querySelector('i');
-    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
-        icon.className = 'fas fa-compress';
-        button.title = 'Quitter le plein écran';
-    } else {
-        icon.className = 'fas fa-expand';
-        button.title = 'Plein écran';
-    }
+function getPdfElement() {
+  // Adapte cette sélection à ton HTML :
+  // par exemple .pdf-container, iframe, embed, object…
+  return document.querySelector('.pdf-container') ||
+         document.querySelector('iframe') ||
+         document.querySelector('embed') ||
+         document.querySelector('object');
 }
 
-// Écouter les changements d'état du plein écran
-document.addEventListener('fullscreenchange', updateFullscreenIcon);
-document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
-document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
-document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
+/* =========================================================================
+ * TOASTS
+ * ========================================================================= */
 
-// ============================================
-// MODE SOMBRE / CLAIR
-// ============================================
-function initTheme() {
-    const savedTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-    applyTheme(theme);
+let toastContainer = null;
+
+function createToastContainer() {
+  if (toastContainer) return;
+  toastContainer = document.createElement('div');
+  toastContainer.id = 'toast-container';
+  document.body.appendChild(toastContainer);
 }
 
-function toggleTheme() {
-    const currentTheme = document.body.getAttribute('data-theme') || 'light';
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
-    applyTheme(newTheme);
-    localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
-    trackEvent('ui', 'theme', newTheme);
-    
-    showToast(`Mode ${newTheme === 'dark' ? 'sombre' : 'clair'} activé`, 'success');
+function showToast(message, type = 'info', duration = 4000) {
+  createToastContainer();
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+
+  toastContainer.appendChild(toast);
+
+  const remove = () => {
+    if (toast && toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+  };
+
+  setTimeout(remove, duration);
 }
 
-function applyTheme(theme) {
-    document.body.setAttribute('data-theme', theme);
-    
-    const themeButton = document.getElementById('theme-toggle');
-    if (themeButton) {
-        const icon = themeButton.querySelector('i');
-        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        themeButton.title = theme === 'dark' ? 'Mode clair' : 'Mode sombre';
-    }
+/* =========================================================================
+ * ANALYTICS (LOCAL)
+ * ========================================================================= */
+
+function loadAnalyticsEvents() {
+  try {
+    const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.ANALYTICS);
+    if (!raw) return [];
+    const events = JSON.parse(raw);
+    if (!Array.isArray(events)) return [];
+    return events;
+  } catch {
+    return [];
+  }
 }
 
-// ============================================
-// FONCTION D'IMPRESSION
-// ============================================
-function printPDF() {
-    const pdfObject = document.querySelector('.pdf-container');
-    
-    if (pdfObject && pdfObject.contentWindow) {
-        try {
-            pdfObject.contentWindow.print();
-            trackEvent('pdf', 'print', 'success');
-        } catch (err) {
-            console.error('Erreur impression:', err);
-            showToast('Impossible d\'imprimer. Téléchargez le PDF.', 'error');
-        }
-    } else {
-        window.print();
-        trackEvent('pdf', 'print', 'fallback');
-    }
+function saveAnalyticsEvents(events) {
+  try {
+    localStorage.setItem(
+      CONFIG.STORAGE_KEYS.ANALYTICS,
+      JSON.stringify(events.slice(-CONFIG.MAX_ANALYTICS_EVENTS))
+    );
+  } catch {
+    // ignore
+  }
 }
 
-// ============================================
-// PARTAGE SUR RÉSEAUX SOCIAUX
-// ============================================
-function shareOnSocial(platform) {
-    const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent(document.title);
-    
-    const urls = {
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-        twitter: `https://twitter.com/intent/tweet?url=${url}&text=${title}`,
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-        email: `mailto:?subject=${title}&body=Consultez ce CV : ${url}`
-    };
-    
-    if (urls[platform]) {
-        if (platform === 'email') {
-            window.location.href = urls[platform];
-        } else {
-            window.open(urls[platform], '_blank', 'width=600,height=400');
-        }
-        trackEvent('share', platform, url);
-    }
-}
+function trackEvent(category, action, label = null) {
+  const events = loadAnalyticsEvents();
+  const event = {
+    time: new Date().toISOString(),
+    category,
+    action,
+    label,
+  };
+  events.push(event);
+  saveAnalyticsEvents(events);
 
-function toggleShareMenu() {
-    const shareMenu = document.getElementById('shareDropdown');
-    if (shareMenu) {
-        shareMenu.classList.toggle('show');
-    }
-}
-
-// ============================================
-// DÉTECTION DU CHARGEMENT DU PDF
-// ============================================
-function checkPDFLoading() {
-    const pdfObject = document.querySelector('.pdf-container');
-    
-    if (pdfObject) {
-        pdfObject.addEventListener('load', () => {
-            console.log('PDF chargé avec succès');
-            trackEvent('pdf', 'load', 'success');
-        });
-        
-        pdfObject.addEventListener('error', () => {
-            console.error('Erreur de chargement du PDF');
-            showToast('Erreur de chargement du PDF', 'error');
-            trackEvent('pdf', 'load', 'error');
-        });
-    }
-}
-
-// ============================================
-// ANALYTICS ET TRACKING
-// ============================================
-function trackEvent(category, action, label) {
-    const event = {
-        category,
-        action,
-        label,
-        timestamp: new Date().toISOString()
-    };
-    
-    // Sauvegarder dans localStorage
-    const analytics = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.ANALYTICS) || '[]');
-    analytics.push(event);
-    
-    // Garder seulement les 100 derniers événements
-    if (analytics.length > 100) {
-        analytics.shift();
-    }
-    
-    localStorage.setItem(CONFIG.STORAGE_KEYS.ANALYTICS, JSON.stringify(analytics));
-    
-    // Si Google Analytics est présent
-    if (typeof gtag !== 'undefined') {
-        gtag('event', action, {
-            'event_category': category,
-            'event_label': label
-        });
-    }
-    
-    console.log('Événement tracké:', event);
+  // Compat GA éventuelle
+  if (window.gtag) {
+    window.gtag('event', action, {
+      event_category: category,
+      event_label: label,
+    });
+  }
 }
 
 function getAnalytics() {
-    return JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.ANALYTICS) || '[]');
+  return loadAnalyticsEvents();
 }
 
-// Tracker le téléchargement du PDF
-document.addEventListener('DOMContentLoaded', () => {
+function trackVisitDuration() {
+  const durationMs = Date.now() - visitStartTime;
+  const seconds = Math.round(durationMs / 1000);
+  trackEvent('page', 'duration', `${seconds}s`);
+}
+
+/* =========================================================================
+ * CLIPBOARD
+ * ========================================================================= */
+
+function copyToClipboard(text, event) {
+  if (!text) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        showToast('Copié dans le presse-papiers.', 'success');
+        trackEvent('clipboard', 'copy', text);
+      })
+      .catch(() => {
+        fallbackCopyToClipboard(text);
+      });
+  } else {
+    fallbackCopyToClipboard(text);
+  }
+}
+
+function fallbackCopyToClipboard(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    document.execCommand('copy');
+    showToast('Copié dans le presse-papiers.', 'success');
+    trackEvent('clipboard', 'copy_fallback', text);
+  } catch {
+    showToast('Impossible de copier.', 'error');
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+/* =========================================================================
+ * MENU CONTACT / SHARE
+ * ========================================================================= */
+
+function toggleMenu() {
+  const menu = document.getElementById('contact-menu');
+  if (!menu) return;
+  const isOpen = menu.classList.toggle('open');
+  trackEvent('menu', 'toggle_contact', isOpen ? 'open' : 'close');
+}
+
+function closeAllDropdowns() {
+  const dropdowns = document.querySelectorAll('.dropdown-menu.open');
+  dropdowns.forEach(d => d.classList.remove('open'));
+}
+
+function toggleShareMenu() {
+  const menu = document.getElementById('share-menu');
+  if (!menu) return;
+  const isOpen = menu.classList.toggle('open');
+  trackEvent('menu', 'toggle_share', isOpen ? 'open' : 'close');
+}
+
+/* =========================================================================
+ * PLEIN ÉCRAN
+ * ========================================================================= */
+
+function isFullScreen() {
+  return !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
+function requestFullScreen(elem) {
+  if (elem.requestFullscreen) return elem.requestFullscreen();
+  if (elem.webkitRequestFullscreen) return elem.webkitRequestFullscreen();
+  if (elem.mozRequestFullScreen) return elem.mozRequestFullScreen();
+  if (elem.msRequestFullscreen) return elem.msRequestFullscreen();
+}
+
+function exitFullScreen() {
+  if (document.exitFullscreen) return document.exitFullscreen();
+  if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+  if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+  if (document.msExitFullscreen) return document.msExitFullscreen();
+}
+
+function toggleFullScreen() {
+  const target = document.documentElement;
+  if (!isFullScreen()) {
+    requestFullScreen(target);
+    trackEvent('fullscreen', 'enter');
+  } else {
+    exitFullScreen();
+    trackEvent('fullscreen', 'exit');
+  }
+}
+
+/* =========================================================================
+ * THÈME SOMBRE / CLAIR
+ * ========================================================================= */
+
+function getSystemPrefersDark() {
+  return window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function applyTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.setAttribute(
+      'aria-label',
+      theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+    );
+  }
+}
+
+function initTheme() {
+  let theme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+  if (!theme) {
+    theme = getSystemPrefersDark() ? 'dark' : 'light';
+  }
+  applyTheme(theme);
+}
+
+function toggleTheme() {
+  const current = document.body.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, next);
+  trackEvent('theme', 'toggle', next);
+  showToast(
+    next === 'dark' ? 'Mode sombre activé.' : 'Mode clair activé.',
+    'success'
+  );
+}
+
+/* =========================================================================
+ * PDF : CHARGEMENT, ZOOM, IMPRESSION
+ * ========================================================================= */
+
+function checkPDFLoading() {
+  const pdf = getPdfElement();
+  if (!pdf) {
+    showToast('CV PDF introuvable.', 'error');
+    trackEvent('pdf', 'missing');
+    return;
+  }
+
+  // Suivant le type d’élément, on peut écouter load/error
+  pdf.addEventListener('load', () => {
+    trackEvent('pdf', 'load', 'success');
+  });
+  pdf.addEventListener('error', () => {
+    trackEvent('pdf', 'load', 'error');
+    showToast('Erreur de chargement du CV PDF.', 'error');
+  });
+}
+
+function applyPdfZoom() {
+  const pdf = getPdfElement();
+  if (!pdf) return;
+
+  pdf.style.transformOrigin = 'top center';
+  pdf.style.transform = `scale(${currentPdfZoom})`;
+
+  const wrapper = pdf.parentElement;
+  if (wrapper) {
+    wrapper.style.overflow = 'auto';
+  }
+}
+
+function setPdfZoom(newZoom) {
+  currentPdfZoom = Math.max(
+    PDF_ZOOM.MIN,
+    Math.min(PDF_ZOOM.MAX, newZoom)
+  );
+  applyPdfZoom();
+  trackEvent('pdf', 'zoom', currentPdfZoom.toFixed(2));
+}
+
+function zoomInPdf() {
+  setPdfZoom(currentPdfZoom + PDF_ZOOM.STEP);
+}
+
+function zoomOutPdf() {
+  setPdfZoom(currentPdfZoom - PDF_ZOOM.STEP);
+}
+
+function resetPdfZoom() {
+  setPdfZoom(PDF_ZOOM.DEFAULT);
+}
+
+function printPDF() {
+  const pdf = getPdfElement();
+  if (!pdf) {
+    showToast('CV PDF introuvable.', 'error');
+    return;
+  }
+  // Si utilisable, on laisse la fenêtre/imprimante standard
+  window.print();
+  trackEvent('pdf', 'print');
+}
+
+/* =========================================================================
+ * PARTAGE
+ * ========================================================================= */
+
+function shareOnSocial(platform) {
+  const url = window.location.href;
+  const title = document.title || "Mon CV";
+
+  let shareUrl = '';
+  if (platform === 'linkedin') {
+    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+  } else if (platform === 'twitter') {
+    shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+  } else if (platform === 'facebook') {
+    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  } else if (platform === 'email') {
+    shareUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`;
+  }
+
+  if (shareUrl) {
+    window.open(shareUrl, '_blank', 'noopener');
+    trackEvent('share', 'click', platform);
+  }
+}
+
+/* =========================================================================
+ * MODE LECTURE / PRÉSENTATION
+ * ========================================================================= */
+
+function toggleReadingMode() {
+  isReadingMode = !isReadingMode;
+  document.body.classList.toggle('reading-mode', isReadingMode);
+  trackEvent('ui', 'reading_mode', isReadingMode ? 'on' : 'off');
+  showToast(
+    isReadingMode ? 'Mode lecture activé.' : 'Mode lecture désactivé.',
+    'success'
+  );
+}
+
+function togglePresentationMode() {
+  isPresentationMode = !isPresentationMode;
+  document.body.classList.toggle('presentation-mode', isPresentationMode);
+  trackEvent('ui', 'presentation_mode', isPresentationMode ? 'on' : 'off');
+  showToast(
+    isPresentationMode ? 'Mode présentation activé.' : 'Mode présentation désactivé.',
+    'success'
+  );
+}
+
+/* =========================================================================
+ * SCROLL : BARRE DE PROGRESSION + RETOUR HAUT
+ * ========================================================================= */
+
+function initScrollUI() {
+  // Barre de progression
+  scrollProgressBar = document.createElement('div');
+  scrollProgressBar.id = 'scroll-progress-bar';
+  document.body.appendChild(scrollProgressBar);
+
+  // Bouton retour en haut
+  backToTopButton = document.createElement('button');
+  backToTopButton.id = 'back-to-top';
+  backToTopButton.className = 'control-button';
+  backToTopButton.title = 'Retour en haut';
+  backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
+  backToTopButton.onclick = () => {
+    // Pas de smooth scroll
+    window.scrollTo(0, 0);
+  };
+  backToTopButton.style.display = 'none';
+  document.body.appendChild(backToTopButton);
+
+  updateScrollUI();
+}
+
+function updateScrollUI() {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+  if (scrollProgressBar) {
+    scrollProgressBar.style.width = progress + '%';
+  }
+
+  if (backToTopButton) {
+    backToTopButton.style.display = scrollTop > 200 ? 'block' : 'none';
+  }
+}
+
+/* =========================================================================
+ * QR CODE (MODALE SIMPLE)
+ * ========================================================================= */
+
+function openQrModal() {
+  let modal = document.getElementById('qr-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'qr-modal';
+    modal.className = 'qr-modal';
+
+    modal.innerHTML = `
+      <div class="qr-modal-content">
+        <button class="qr-close" aria-label="Fermer">&times;</button>
+        <h2>QR Code de mon CV</h2>
+        <img id="qr-image" alt="QR Code CV" />
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('.qr-close').onclick = closeQrModal;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeQrModal();
+    });
+  }
+
+  const img = modal.querySelector('#qr-image');
+  // Mets ici l’URL de ton image QR code
+  const qrImageUrl = ''; 
+  if (qrImageUrl) {
+    img.src = qrImageUrl;
+  }
+
+  modal.style.display = 'flex';
+  trackEvent('ui', 'qr', 'open');
+}
+
+function closeQrModal() {
+  const modal = document.getElementById('qr-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+/* =========================================================================
+ * CONNEXION / BATTERIE
+ * ========================================================================= */
+
+window.addEventListener('online', () => {
+  showToast('Connexion rétablie.', 'success');
+  trackEvent('network', 'status', 'online');
+});
+
+window.addEventListener('offline', () => {
+  showToast('Vous êtes hors ligne.', 'error');
+  trackEvent('network', 'status', 'offline');
+});
+
+function initBatterySaver() {
+  if (!navigator.getBattery) return;
+
+  navigator.getBattery().then((battery) => {
+    function handleBattery() {
+      if (!battery.charging && battery.level < 0.2) {
+        if (document.body.getAttribute('data-theme') !== 'dark') {
+          applyTheme('dark');
+          localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, 'dark');
+          trackEvent('ui', 'battery_saver', 'dark_forced');
+          showToast('Mode sombre activé (batterie faible).', 'success');
+        }
+      }
+    }
+
+    handleBattery();
+    battery.addEventListener('levelchange', handleBattery);
+    battery.addEventListener('chargingchange', handleBattery);
+  });
+}
+
+/* =========================================================================
+ * VERSION DU CV
+ * ========================================================================= */
+
+function checkCvVersion() {
+  const STORAGE_KEY = 'cv-last-version';
+  const lastVersion = localStorage.getItem(STORAGE_KEY);
+
+  if (lastVersion && lastVersion !== CV_VERSION) {
+    showToast('Nouveau CV disponible depuis votre dernière visite.', 'success');
+  }
+
+  localStorage.setItem(STORAGE_KEY, CV_VERSION);
+}
+
+/* =========================================================================
+ * RECOMMANDATIONS (SUGGESTION DE TÉLÉCHARGEMENT)
+ * ========================================================================= */
+
+function initSmartSuggestions() {
+  setTimeout(() => {
+    if (downloadSuggested) return;
+    const events = getAnalytics();
+    const hasDownloaded = events.some(
+      (e) => e.category === 'pdf' && e.action === 'download'
+    );
+    if (!hasDownloaded) {
+      showToast(
+        'Vous pouvez télécharger mon CV en PDF avec le bouton dédié.',
+        'success'
+      );
+      trackEvent('ui', 'suggestion', 'download_pdf');
+      downloadSuggested = true;
+    }
+  }, 45000);
+}
+
+/* =========================================================================
+ * EXPORT ANALYTICS
+ * ========================================================================= */
+
+function exportAnalyticsAsJson() {
+  const data = getAnalytics();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'cv-analytics.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  trackEvent('analytics', 'export', 'json');
+  showToast('Export des analytics en JSON lancé.', 'success');
+}
+
+/* =========================================================================
+ * RACCOURCIS CLAVIER
+ * ========================================================================= */
+
+function handleLetterShortcuts(event) {
+  const activeTag = document.activeElement && document.activeElement.tagName;
+  if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
+  const key = event.key.toLowerCase();
+
+  // Menu contact : C
+  if (key === 'c') {
+    toggleMenu();
+    return;
+  }
+
+  // Télécharger PDF : D (cherche un lien avec download)
+  if (key === 'd') {
     const downloadLink = document.querySelector('a[download]');
     if (downloadLink) {
-        downloadLink.addEventListener('click', () => {
-            trackEvent('pdf', 'download', downloadLink.href);
-            showToast('Téléchargement du PDF...', 'success');
-        });
+      downloadLink.click();
+      trackEvent('pdf', 'download', 'shortcut');
     }
-});
+    return;
+  }
 
-// ============================================
-// DEBOUNCING UTILITY
-// ============================================
-function debounce(func, delay) {
-    let timeoutId;
-    return function(...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
-    };
+  // Imprimer : P
+  if (key === 'p') {
+    event.preventDefault();
+    printPDF();
+    return;
+  }
+
+  // Thème : T
+  if (key === 't') {
+    toggleTheme();
+    return;
+  }
+
+  // Partage : S
+  if (key === 's') {
+    toggleShareMenu();
+    return;
+  }
+
+  // Mode lecture : F
+  if (key === 'f') {
+    toggleReadingMode();
+    return;
+  }
+
+  // Mode présentation : M
+  if (key === 'm') {
+    togglePresentationMode();
+    return;
+  }
+
+  // Aide raccourcis : ?
+  if (event.key === '?') {
+    showShortcutsHelp();
+    return;
+  }
 }
 
-// ============================================
-// AJOUT DES NOUVEAUX BOUTONS
-// ============================================
+function handleKeydownShortcuts(event) {
+  // Ctrl + / Ctrl - / Ctrl 0 pour le zoom PDF
+  if (event.ctrlKey) {
+    if (event.key === '+') {
+      event.preventDefault();
+      zoomInPdf();
+      return;
+    }
+    if (event.key === '-') {
+      event.preventDefault();
+      zoomOutPdf();
+      return;
+    }
+    if (event.key === '0') {
+      event.preventDefault();
+      resetPdfZoom();
+      return;
+    }
+  }
+
+  handleLetterShortcuts(event);
+}
+
+function showShortcutsHelp() {
+  const message = [
+    'Raccourcis :',
+    'C: Contact',
+    'D: Télécharger le PDF',
+    'P: Imprimer',
+    'T: Thème',
+    'S: Partager',
+    'F: Mode lecture',
+    'M: Mode présentation',
+    'Ctrl+ / Ctrl- / Ctrl0: Zoom PDF'
+  ].join(' | ');
+  showToast(message, 'success', 8000);
+}
+
+/* =========================================================================
+ * EASTER EGG (KONAMI)
+ * ========================================================================= */
+
+function handleKonamiCode(event) {
+  if (event.key === KONAMI_CODE[konamiIndex]) {
+    konamiIndex++;
+    if (konamiIndex === KONAMI_CODE.length) {
+      konamiIndex = 0;
+      triggerEasterEgg();
+    }
+  } else {
+    konamiIndex = 0;
+  }
+}
+
+function triggerEasterEgg() {
+  showToast('Easter egg débloqué ! Merci pour votre curiosité.', 'success');
+  trackEvent('ui', 'easter_egg', 'konami');
+}
+
+/* =========================================================================
+ * BARRE DE CONTRÔLE HAUT (SI TU EN AS UNE)
+ * ========================================================================= */
+
 function addEnhancedControls() {
-    const controlsRight = document.querySelector('.controls-group:last-child');
-    
-    if (!controlsRight) return;
-    
-    // Bouton Mode Sombre/Clair
-    const themeButton = document.createElement('button');
-    themeButton.id = 'theme-toggle';
-    themeButton.className = 'control-button';
-    themeButton.onclick = toggleTheme;
-    themeButton.title = 'Mode sombre';
-    themeButton.innerHTML = '<i class="fas fa-moon"></i>';
-    
-    // Bouton Impression
-    const printButton = document.createElement('button');
-    printButton.className = 'control-button';
-    printButton.onclick = printPDF;
-    printButton.title = 'Imprimer';
-    printButton.innerHTML = '<i class="fas fa-print"></i>';
-    
-    // Bouton Partage
-    const shareContainer = document.createElement('div');
-    shareContainer.className = 'dropdown';
-    shareContainer.innerHTML = `
-        <button onclick="toggleShareMenu()" class="control-button" title="Partager">
-            <i class="fas fa-share-alt"></i>
-        </button>
-        <div id="shareDropdown" class="dropdown-content">
-            <a href="#" onclick="shareOnSocial('linkedin'); return false;">
-                <i class="fab fa-linkedin"></i>
-                <span class="info-text">LinkedIn</span>
-            </a>
-            <a href="#" onclick="shareOnSocial('twitter'); return false;">
-                <i class="fab fa-twitter"></i>
-                <span class="info-text">Twitter</span>
-            </a>
-            <a href="#" onclick="shareOnSocial('facebook'); return false;">
-                <i class="fab fa-facebook"></i>
-                <span class="info-text">Facebook</span>
-            </a>
-            <a href="#" onclick="shareOnSocial('email'); return false;">
-                <i class="fas fa-envelope"></i>
-                <span class="info-text">Email</span>
-            </a>
-        </div>
-    `;
-    
-    // Insérer les boutons avant le bouton PDF
-    const pdfButton = controlsRight.querySelector('.primary');
-    controlsRight.insertBefore(themeButton, pdfButton);
-    controlsRight.insertBefore(printButton, pdfButton);
-    controlsRight.insertBefore(shareContainer, pdfButton);
+  // On suppose une barre avec id="top-controls" et une zone à droite
+  // Adapte si différent
+  const controlsBar = document.getElementById('top-controls');
+  if (!controlsBar) return;
+
+  let controlsRight = controlsBar.querySelector('.controls-right');
+  if (!controlsRight) {
+    controlsRight = document.createElement('div');
+    controlsRight.className = 'controls-right';
+    controlsBar.appendChild(controlsRight);
+  }
+
+  const pdfButton = controlsRight.querySelector('.pdf-button') || controlsRight.lastChild;
+
+  // Zoom -
+  const zoomOutButton = document.createElement('button');
+  zoomOutButton.className = 'control-button';
+  zoomOutButton.title = 'Zoom -';
+  zoomOutButton.onclick = zoomOutPdf;
+  zoomOutButton.innerHTML = '<i class="fas fa-search-minus"></i>';
+
+  // Zoom reset
+  const zoomResetButton = document.createElement('button');
+  zoomResetButton.className = 'control-button';
+  zoomResetButton.title = 'Zoom 100%';
+  zoomResetButton.onclick = resetPdfZoom;
+  zoomResetButton.innerHTML = '<i class="fas fa-search"></i>';
+
+  // Zoom +
+  const zoomInButton = document.createElement('button');
+  zoomInButton.className = 'control-button';
+  zoomInButton.title = 'Zoom +';
+  zoomInButton.onclick = zoomInPdf;
+  zoomInButton.innerHTML = '<i class="fas fa-search-plus"></i>';
+
+  // Mode lecture
+  const readingButton = document.createElement('button');
+  readingButton.className = 'control-button';
+  readingButton.title = 'Mode lecture';
+  readingButton.onclick = toggleReadingMode;
+  readingButton.innerHTML = '<i class="fas fa-book-open"></i>';
+
+  // Impression
+  const printButton = document.createElement('button');
+  printButton.className = 'control-button';
+  printButton.title = 'Imprimer';
+  printButton.onclick = printPDF;
+  printButton.innerHTML = '<i class="fas fa-print"></i>';
+
+  // Thème
+  const themeButton = document.createElement('button');
+  themeButton.id = 'theme-toggle';
+  themeButton.className = 'control-button';
+  themeButton.title = 'Changer de thème';
+  themeButton.onclick = toggleTheme;
+  themeButton.innerHTML = '<i class="fas fa-moon"></i>';
+
+  // Plein écran
+  const fullscreenButton = document.createElement('button');
+  fullscreenButton.className = 'control-button';
+  fullscreenButton.title = 'Plein écran';
+  fullscreenButton.onclick = toggleFullScreen;
+  fullscreenButton.innerHTML = '<i class="fas fa-expand"></i>';
+
+  // Partage (ouvre le menu de partage)
+  const shareButton = document.createElement('button');
+  shareButton.className = 'control-button';
+  shareButton.title = 'Partager';
+  shareButton.onclick = toggleShareMenu;
+  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';
+
+  // Insertion
+  const refNode = pdfButton || null;
+  controlsRight.insertBefore(zoomOutButton, refNode);
+  controlsRight.insertBefore(zoomResetButton, refNode);
+  controlsRight.insertBefore(zoomInButton, refNode);
+  controlsRight.insertBefore(readingButton, refNode);
+  controlsRight.insertBefore(printButton, refNode);
+  controlsRight.insertBefore(themeButton, refNode);
+  controlsRight.insertBefore(fullscreenButton, refNode);
+  controlsRight.insertBefore(shareButton, refNode);
 }
 
-// ============================================
-// NETTOYAGE DES BARRES DE CONTRÔLE DUPLIQUÉES
-// ============================================
-function cleanupDuplicateControlBars() {
-    const controlBars = document.querySelectorAll('.custom-controls');
-    if (controlBars.length > 1) {
-        for (let i = 1; i < controlBars.length; i++) {
-            controlBars[i].remove();
-        }
-    }
-}
+/* =========================================================================
+ * INIT GLOBALE
+ * ========================================================================= */
 
-// ============================================
-// GESTION DU RESIZE (DEBOUNCED)
-// ============================================
-const handleResize = debounce(() => {
-    console.log('Fenêtre redimensionnée');
-    trackEvent('ui', 'resize', `${window.innerWidth}x${window.innerHeight}`);
-}, CONFIG.DEBOUNCE_DELAY);
-
-window.addEventListener('resize', handleResize);
-
-// ============================================
-// INITIALISATION AU CHARGEMENT DE LA PAGE
-// ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Initialisation du CV amélioré...');
-    
-    // Nettoyage
-    cleanupDuplicateControlBars();
-    
-    // Ajouter les nouveaux contrôles
-    addEnhancedControls();
-    
-    // Initialiser le thème
-    initTheme();
-    
-    // Vérifier le chargement du PDF
-    checkPDFLoading();
-    
-    // Tracker le chargement de la page
-    trackEvent('page', 'load', window.location.href);
-    
-    console.log('✅ Initialisation terminée');
-    
-    // Afficher un message de bienvenue
-    setTimeout(() => {
-        showToast('Bienvenue sur mon CV !', 'success');
-    }, 500);
+  console.log('Initialisation CV…');
+
+  // Thème
+  initTheme();
+
+  // PDF
+  checkPDFLoading();
+  applyPdfZoom();
+
+  // Barre contrôles
+  addEnhancedControls();
+
+  // Scroll
+  initScrollUI();
+  window.addEventListener('scroll', debounce(updateScrollUI, 100));
+
+  // Batterie
+  initBatterySaver();
+
+  // Version CV
+  checkCvVersion();
+
+  // Suggestion smart
+  initSmartSuggestions();
+
+  // Analytics : chargement page
+  trackEvent('page', 'load', window.location.href);
+
+  // Message de bienvenue
+  setTimeout(() => {
+    showToast('Bienvenue sur mon CV !', 'success');
+  }, 500);
 });
 
-// ============================================
-// GESTION DE LA VISIBILITÉ DE LA PAGE
-// ============================================
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        trackEvent('page', 'hidden', 'user_left');
-    } else {
-        trackEvent('page', 'visible', 'user_returned');
-    }
+// Durée de visite
+window.addEventListener('beforeunload', () => {
+  trackVisitDuration();
 });
 
-// ============================================
-// EXPORT DES FONCTIONS GLOBALES
-// ============================================
+// Gestion clavier global
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    closeAllDropdowns();
+    return;
+  }
+  handleKeydownShortcuts(event);
+  handleKonamiCode(event);
+});
+
+/* =========================================================================
+ * EXPORT POUR HTML
+ * ========================================================================= */
+
 window.copyToClipboard = copyToClipboard;
 window.toggleMenu = toggleMenu;
+window.toggleShareMenu = toggleShareMenu;
 window.toggleFullScreen = toggleFullScreen;
 window.toggleTheme = toggleTheme;
 window.printPDF = printPDF;
 window.shareOnSocial = shareOnSocial;
-window.toggleShareMenu = toggleShareMenu;
 window.getAnalytics = getAnalytics;
+window.zoomInPdf = zoomInPdf;
+window.zoomOutPdf = zoomOutPdf;
+window.resetPdfZoom = resetPdfZoom;
+window.toggleReadingMode = toggleReadingMode;
+window.togglePresentationMode = togglePresentationMode;
+window.exportAnalyticsAsJson = exportAnalyticsAsJson;
+window.openQrModal = openQrModal;
